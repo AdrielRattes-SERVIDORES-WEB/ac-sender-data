@@ -169,10 +169,11 @@
 // SHA-256 hash of the access password (never store the plain text password here)
 var PASS_HASH = 'bbf53315ce68038137fbeb5d937c88d5da0901cf3222eeb3bad0d2da938bbf5c';
 var DATA_URL  = 'https://raw.githubusercontent.com/AdrielRattes-SERVIDORES-WEB/ac-sender-data/main/data.json';
-var VPS_API   = 'http://164.152.246.7';
-// API token - only visible after password auth
+// VPS_API is read from data.json (tunnel URL changes on VPS restart)
+var _vpsApi = null;
 var _tk = null;
 function getToken() { return _tk; }
+function getApi()   { return _vpsApi; }
 
 async function sha256(str) {
   var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -307,6 +308,12 @@ async function carregarDados() {
     renderSection('ac', d.ac);
     renderSection('cm', d.cartamenu);
     updateWaStatus(d.wa_status);
+    // Update tunnel URL from data (rotates on VPS restart)
+    if (d.tunnel && d.tunnel.url) {
+      _vpsApi = d.tunnel.url;
+      var btn = document.getElementById('btn-reconnect');
+      if (btn) btn.title = 'Tunnel: ' + _vpsApi;
+    }
     var dt = new Date(d.atualizado_em);
     document.getElementById('last-update').textContent = 'Atualizado: ' + dt.toLocaleString('pt-BR') + ' UTC';
   } catch(e) {
@@ -315,13 +322,17 @@ async function carregarDados() {
 }
 
 async function iniciarReconexao() {
+  if (!getApi()) {
+    alert('Tunnel offline. Aguarde a proxima atualizacao dos dados (ate 5 min).');
+    return;
+  }
   document.getElementById('qr-modal').classList.remove('hidden');
   document.getElementById('qr-status-text').textContent = 'Iniciando reconexao...';
   document.getElementById('qr-canvas').classList.add('hidden');
   document.getElementById('qr-loading').classList.remove('hidden');
   document.getElementById('qr-loading').textContent = 'Iniciando...';
   try {
-    var r = await fetch(VPS_API + '/reconnect', {
+    var r = await fetch(getApi() + '/reconnect', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' }
     });
@@ -345,7 +356,7 @@ function iniciarPollQr() {
       return;
     }
     try {
-      var r = await fetch(VPS_API + '/qr?t=' + Date.now(), {
+      var r = await fetch(getApi() + '/qr?t=' + Date.now(), {
         headers: { 'Authorization': 'Bearer ' + getToken() }
       });
       if (r.status === 401) { clearInterval(qrPollTimer); return; }
