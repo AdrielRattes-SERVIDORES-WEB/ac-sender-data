@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AC Sender &mdash; Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body { background:#0f172a; color:#f1f5f9; }
   .card { background:#1e293b; border:1px solid #334155; }
@@ -157,7 +156,7 @@
     <h2 class="text-xl font-bold text-white mb-2">Reconectar WhatsApp</h2>
     <p id="qr-status-text" class="text-slate-400 text-sm mb-6">Iniciando reconexao...</p>
     <div id="qr-container" class="flex justify-center mb-6">
-      <div id="qr-render" class="hidden rounded-lg overflow-hidden" style="background:#fff;padding:8px"></div>
+      <img id="qr-img" class="hidden rounded-lg" style="width:220px;height:220px" />
       <div id="qr-loading" class="text-slate-500 text-sm py-8">Aguardando QR code...</div>
     </div>
     <p class="text-xs text-slate-500 mb-4">Escaneie com o WhatsApp: Aparelhos conectados > Conectar aparelho</p>
@@ -372,20 +371,12 @@ function iniciarPollQr() {
         document.getElementById('btn-reconnect').classList.add('hidden');
         return;
       }
-      if (d.qr && d.status === 'pending') {
+      if (d.img && d.status === 'pending') {
         document.getElementById('qr-status-text').textContent = 'Escaneie com o WhatsApp';
         document.getElementById('qr-loading').classList.add('hidden');
-        var qrDiv = document.getElementById('qr-render');
-        try {
-          var qr = qrcode(0, 'L');
-          qr.addData(d.qr, 'Byte');
-          qr.make();
-          qrDiv.innerHTML = qr.createImgTag(4, 2);
-          qrDiv.classList.remove('hidden');
-        } catch(qrErr) {
-          document.getElementById('qr-loading').classList.remove('hidden');
-          document.getElementById('qr-loading').textContent = 'Erro ao gerar QR: ' + (qrErr.message || qrErr);
-        }
+        var img = document.getElementById('qr-img');
+        img.src = d.img;
+        img.classList.remove('hidden');
       } else if (d.status === 'expired') {
         document.getElementById('qr-status-text').textContent = 'QR expirado. Clique em Reconectar novamente.';
         clearInterval(qrPollTimer);
