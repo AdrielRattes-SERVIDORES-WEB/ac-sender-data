@@ -376,8 +376,22 @@ function iniciarPollQr() {
         document.getElementById('qr-status-text').textContent = 'Escaneie com o WhatsApp';
         document.getElementById('qr-loading').classList.add('hidden');
         var canvas = document.getElementById('qr-canvas');
-        canvas.classList.remove('hidden');
-        QRCode.toCanvas(canvas, d.qr, { width: 220, color: { dark: '#000000', light: '#ffffff' } });
+        try {
+          await QRCode.toCanvas(canvas, d.qr, { width: 220, errorCorrectionLevel: 'L', color: { dark: '#000000', light: '#ffffff' } });
+          canvas.classList.remove('hidden');
+        } catch(qrErr) {
+          try {
+            var dataUrl = await QRCode.toDataURL(d.qr, { width: 220, errorCorrectionLevel: 'L' });
+            canvas.classList.add('hidden');
+            var img = document.getElementById('qr-img');
+            if (!img) { img = document.createElement('img'); img.id = 'qr-img'; img.className = 'rounded-lg mx-auto'; canvas.parentNode.insertBefore(img, canvas); }
+            img.src = dataUrl;
+            img.style.width = '220px';
+          } catch(e2) {
+            document.getElementById('qr-loading').classList.remove('hidden');
+            document.getElementById('qr-loading').textContent = 'Erro ao gerar QR: ' + (qrErr.message || qrErr);
+          }
+        }
       } else if (d.status === 'expired') {
         document.getElementById('qr-status-text').textContent = 'QR expirado. Clique em Reconectar novamente.';
         clearInterval(qrPollTimer);
