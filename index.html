@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AC Sender &mdash; Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body { background:#0f172a; color:#f1f5f9; }
   .card { background:#1e293b; border:1px solid #334155; }
@@ -157,7 +157,7 @@
     <h2 class="text-xl font-bold text-white mb-2">Reconectar WhatsApp</h2>
     <p id="qr-status-text" class="text-slate-400 text-sm mb-6">Iniciando reconexao...</p>
     <div id="qr-container" class="flex justify-center mb-6">
-      <canvas id="qr-canvas" class="rounded-lg hidden"></canvas>
+      <div id="qr-render" class="hidden rounded-lg overflow-hidden" style="background:#fff;padding:8px"></div>
       <div id="qr-loading" class="text-slate-500 text-sm py-8">Aguardando QR code...</div>
     </div>
     <p class="text-xs text-slate-500 mb-4">Escaneie com o WhatsApp: Aparelhos conectados > Conectar aparelho</p>
@@ -375,22 +375,16 @@ function iniciarPollQr() {
       if (d.qr && d.status === 'pending') {
         document.getElementById('qr-status-text').textContent = 'Escaneie com o WhatsApp';
         document.getElementById('qr-loading').classList.add('hidden');
-        var canvas = document.getElementById('qr-canvas');
+        var qrDiv = document.getElementById('qr-render');
         try {
-          await QRCode.toCanvas(canvas, d.qr, { width: 220, errorCorrectionLevel: 'L', color: { dark: '#000000', light: '#ffffff' } });
-          canvas.classList.remove('hidden');
+          var qr = qrcode(0, 'L');
+          qr.addData(d.qr, 'Byte');
+          qr.make();
+          qrDiv.innerHTML = qr.createImgTag(4, 2);
+          qrDiv.classList.remove('hidden');
         } catch(qrErr) {
-          try {
-            var dataUrl = await QRCode.toDataURL(d.qr, { width: 220, errorCorrectionLevel: 'L' });
-            canvas.classList.add('hidden');
-            var img = document.getElementById('qr-img');
-            if (!img) { img = document.createElement('img'); img.id = 'qr-img'; img.className = 'rounded-lg mx-auto'; canvas.parentNode.insertBefore(img, canvas); }
-            img.src = dataUrl;
-            img.style.width = '220px';
-          } catch(e2) {
-            document.getElementById('qr-loading').classList.remove('hidden');
-            document.getElementById('qr-loading').textContent = 'Erro ao gerar QR: ' + (qrErr.message || qrErr);
-          }
+          document.getElementById('qr-loading').classList.remove('hidden');
+          document.getElementById('qr-loading').textContent = 'Erro ao gerar QR: ' + (qrErr.message || qrErr);
         }
       } else if (d.status === 'expired') {
         document.getElementById('qr-status-text').textContent = 'QR expirado. Clique em Reconectar novamente.';
