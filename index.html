@@ -160,6 +160,7 @@
       <div id="qr-loading" class="text-slate-500 text-sm py-8">Aguardando QR code...</div>
     </div>
     <p class="text-xs text-slate-500 mb-4">Escaneie com o WhatsApp: Aparelhos conectados > Conectar aparelho</p>
+    <div id="qr-debug" class="text-xs text-slate-600 mb-3 font-mono break-all"></div>
     <button onclick="fecharQrModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Fechar</button>
   </div>
 </div>
@@ -360,12 +361,13 @@ function iniciarPollQr() {
       });
       if (r.status === 401) { clearInterval(qrPollTimer); return; }
       var d = await r.json();
+      document.getElementById('qr-debug').textContent = '[' + tentativas + '] status:' + d.status + ' img:' + (!!d.img) + ' api:' + (getApi()||'null').substring(8,38);
       if (d.status === 'connected') {
         clearInterval(qrPollTimer);
         document.getElementById('qr-status-text').textContent = 'Conectado com sucesso!';
         document.getElementById('qr-loading').classList.remove('hidden');
         document.getElementById('qr-loading').textContent = 'WhatsApp conectado!';
-        document.getElementById('qr-canvas').classList.add('hidden');
+        document.getElementById('qr-img').classList.add('hidden');
         document.getElementById('wa-status-badge').textContent = 'WhatsApp conectado';
         document.getElementById('wa-status-badge').className = 'px-3 py-1.5 rounded-full text-xs font-medium bg-green-900 text-green-300';
         document.getElementById('btn-reconnect').classList.add('hidden');
@@ -381,7 +383,9 @@ function iniciarPollQr() {
         document.getElementById('qr-status-text').textContent = 'QR expirado. Clique em Reconectar novamente.';
         clearInterval(qrPollTimer);
       }
-    } catch(e) {}
+    } catch(e) {
+      document.getElementById('qr-debug').textContent = '[' + tentativas + '] ERRO: ' + e.message + ' api:' + (getApi()||'null').substring(8,38);
+    }
   }, 2000);
 }
 
