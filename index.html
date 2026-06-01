@@ -11,8 +11,32 @@
   .card { background:#1e293b; border:1px solid #334155; }
 </style>
 </head>
-<body class="min-h-screen p-6">
+<body class="min-h-screen">
 
+<!-- Login Gate -->
+<div id="login-gate" class="fixed inset-0 z-[999] flex items-center justify-center" style="background:#0f172a">
+  <div class="w-full max-w-xs">
+    <div class="text-center mb-8">
+      <div class="text-4xl mb-3">🔒</div>
+      <h1 class="text-xl font-bold text-white">AC Sender</h1>
+    </div>
+    <div class="card rounded-2xl p-7">
+      <div id="login-error" class="hidden mb-4 p-3 rounded-lg bg-red-900/30 border border-red-700 text-red-300 text-sm">Senha incorreta.</div>
+      <label class="block text-sm text-slate-400 mb-2">Senha</label>
+      <input type="password" id="login-input" placeholder="••••••••"
+        class="w-full px-4 py-3 rounded-lg text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+        style="background:#0f172a;border:1px solid #334155"
+        onkeydown="if(event.key==='Enter') verificarSenha()">
+      <button onclick="verificarSenha()"
+        class="w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 transition text-sm">
+        Entrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard (hidden until login) -->
+<div id="app" class="hidden p-6">
 <div class="max-w-6xl mx-auto">
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
@@ -27,6 +51,9 @@
       <button id="btn-reconnect" onclick="iniciarReconexao()"
         class="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition hidden">
         Reconectar
+      </button>
+      <button onclick="sair()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs transition">
+        Sair
       </button>
     </div>
   </div>
@@ -122,6 +149,7 @@
     </div>
   </div>
 </div>
+</div>
 
 <!-- Modal QR -->
 <div id="qr-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center" style="background:rgba(0,0,0,0.8)">
@@ -138,9 +166,59 @@
 </div>
 
 <script>
+// SHA-256 hash of the access password (never store the plain text password here)
+var PASS_HASH = 'bbf53315ce68038137fbeb5d937c88d5da0901cf3222eeb3bad0d2da938bbf5c';
 var DATA_URL  = 'https://raw.githubusercontent.com/AdrielRattes-SERVIDORES-WEB/ac-sender-data/main/data.json';
 var VPS_API   = 'http://164.152.246.7';
-var API_TOKEN = 'ac-sender-2026';
+// API token - only visible after password auth
+var _tk = null;
+function getToken() { return _tk; }
+
+async function sha256(str) {
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function verificarSenha() {
+  var input = document.getElementById('login-input').value;
+  var hash = await sha256(input);
+  if (hash === PASS_HASH) {
+    // Derive API token from password hash (first 20 chars as token suffix)
+    _tk = 'ac-' + hash.substring(0, 20);
+    sessionStorage.setItem('ac_auth', hash);
+    sessionStorage.setItem('ac_tk', _tk);
+    document.getElementById('login-gate').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    carregarDados();
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+    document.getElementById('login-input').value = '';
+    document.getElementById('login-input').focus();
+  }
+}
+
+function sair() {
+  sessionStorage.removeItem('ac_auth');
+  sessionStorage.removeItem('ac_tk');
+  _tk = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-gate').classList.remove('hidden');
+  document.getElementById('login-input').value = '';
+}
+
+// Check existing session
+(async function() {
+  var saved = sessionStorage.getItem('ac_auth');
+  if (saved && saved === PASS_HASH) {
+    _tk = sessionStorage.getItem('ac_tk') || ('ac-' + saved.substring(0, 20));
+    document.getElementById('login-gate').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    carregarDados();
+  } else {
+    document.getElementById('login-input').focus();
+  }
+})();
+
 var qrPollTimer = null;
 
 function setTab(t) {
@@ -245,7 +323,7 @@ async function iniciarReconexao() {
   try {
     var r = await fetch(VPS_API + '/reconnect', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + API_TOKEN, 'Content-Type': 'application/json' }
+      headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' }
     });
     var d = await r.json();
     if (!d.ok) throw new Error(d.error || 'Erro');
@@ -267,7 +345,10 @@ function iniciarPollQr() {
       return;
     }
     try {
-      var r = await fetch(VPS_API + '/qr?t=' + Date.now());
+      var r = await fetch(VPS_API + '/qr?t=' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
+      if (r.status === 401) { clearInterval(qrPollTimer); return; }
       var d = await r.json();
       if (d.status === 'connected') {
         clearInterval(qrPollTimer);
@@ -303,8 +384,7 @@ document.getElementById('qr-modal').addEventListener('click', function(e) {
   if (e.target === this) fecharQrModal();
 });
 
-carregarDados();
-setInterval(carregarDados, 120000);
+setInterval(function() { if (_tk) carregarDados(); }, 120000);
 </script>
 </body>
 </html>
