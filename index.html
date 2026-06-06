@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AC Sender &mdash; Dashboard</title>
+<title>AC Sender — Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { background:#0f172a; color:#f1f5f9; }
   .card { background:#1e293b; border:1px solid #334155; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -16,7 +17,7 @@
 <div id="login-gate" class="fixed inset-0 z-[999] flex items-center justify-center" style="background:#0f172a">
   <div class="w-full max-w-xs">
     <div class="text-center mb-8">
-      <div class="text-4xl mb-3">🔒</div>
+      <div class="text-4xl mb-3">❄️</div>
       <h1 class="text-xl font-bold text-white">AC Sender</h1>
     </div>
     <div class="card rounded-2xl p-7">
@@ -26,161 +27,134 @@
         class="w-full px-4 py-3 rounded-lg text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 mb-4"
         style="background:#0f172a;border:1px solid #334155"
         onkeydown="if(event.key==='Enter') verificarSenha()">
-      <button onclick="verificarSenha()"
-        class="w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 transition text-sm">
-        Entrar
-      </button>
+      <button onclick="verificarSenha()" class="w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 transition text-sm">Entrar</button>
     </div>
   </div>
 </div>
 
-<!-- Dashboard (hidden until login) -->
-<div id="app" class="hidden p-6">
-<div class="max-w-6xl mx-auto">
+<!-- Dashboard -->
+<div id="app" class="hidden p-4 md:p-6">
+<div class="max-w-7xl mx-auto">
+
   <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
     <div>
       <h1 class="text-2xl font-bold text-white">AC Sender Dashboard</h1>
       <p id="last-update" class="text-slate-400 text-sm mt-1">Carregando...</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap">
-      <div class="flex items-center gap-1.5">
-        <div id="wa-badge-1" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">WA1: verificando...</div>
-        <button id="btn-reconnect-1" onclick="iniciarReconexao(1)"
-          class="px-3 py-1.5 bg-green-700 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition hidden">
-          Reconectar #1
-        </button>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div id="wa-badge-2" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">WA2: verificando...</div>
-        <button id="btn-reconnect-2" onclick="iniciarReconexao(2)"
-          class="px-3 py-1.5 bg-green-700 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition hidden">
-          Reconectar #2
-        </button>
-      </div>
-      <button onclick="sair()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs transition">
-        Sair
-      </button>
+      <div id="wa-badge-1" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300">WA1: verificando...</div>
+      <button onclick="sair()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs transition">Sair</button>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="flex gap-2 mb-6 border-b border-slate-700">
-    <button onclick="setTab('ac')" id="tab-ac"
-      class="tab-btn px-4 py-2 text-sm font-medium text-white border-b-2 border-blue-500 -mb-px">
-      BR AC Sender
-    </button>
-    <button onclick="setTab('cm')" id="tab-cm"
-      class="tab-btn px-4 py-2 text-sm font-medium text-slate-400 hover:text-white border-b-2 border-transparent -mb-px transition">
-      ES CartaMenu
-    </button>
-  </div>
-
-  <!-- AC Sender Section -->
-  <div id="section-ac">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-white" id="ac-total">--</div><div class="text-slate-400 text-xs mt-1">Total leads</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-blue-400" id="ac-validos">--</div><div class="text-slate-400 text-xs mt-1">Validos AC</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-green-400" id="ac-enviados">--</div><div class="text-slate-400 text-xs mt-1">Enviados</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-purple-400" id="ac-disponiveis">--</div><div class="text-slate-400 text-xs mt-1">Disponiveis</div></div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-white" id="ac-total">--</div>
+      <div class="text-slate-400 text-xs mt-1">Total leads</div>
     </div>
-    <div class="grid grid-cols-3 gap-4 mb-6">
-      <div class="card rounded-xl p-4 text-center"><div class="text-xl font-bold text-yellow-400" id="ac-hoje">--</div><div class="text-slate-400 text-xs mt-1">Hoje</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-xl font-bold text-cyan-400" id="ac-dias">--</div><div class="text-slate-400 text-xs mt-1">Dias restantes</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-xl font-bold text-orange-400" id="ac-template">--</div><div class="text-slate-400 text-xs mt-1">Template atual</div></div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-blue-400" id="ac-validos">--</div>
+      <div class="text-slate-400 text-xs mt-1">Válidos AC</div>
     </div>
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
-      <div class="card rounded-xl p-5">
-        <h3 class="font-semibold text-white mb-4">Envios por dia</h3>
-        <div id="chart-ac" class="space-y-2"></div>
-      </div>
-      <div class="card rounded-xl p-5">
-        <h3 class="font-semibold text-white mb-4">Top cidades (disponiveis)</h3>
-        <div id="cidades-ac" class="space-y-2"></div>
-      </div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-green-400" id="ac-enviados">--</div>
+      <div class="text-slate-400 text-xs mt-1">Enviados</div>
     </div>
-    <div class="card rounded-xl p-5 mb-6">
-      <h3 class="font-semibold text-white mb-3">Log recente</h3>
-      <div id="log-ac" class="font-mono text-xs text-slate-400 space-y-0.5 max-h-48 overflow-y-auto"></div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-purple-400" id="ac-disponiveis">--</div>
+      <div class="text-slate-400 text-xs mt-1">Disponíveis</div>
     </div>
-    <div class="card rounded-xl overflow-hidden">
-      <div class="p-4 border-b border-slate-700"><h3 class="font-semibold text-white">Enviados recentes</h3></div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead><tr class="border-b border-slate-700 text-slate-400">
-            <th class="text-left px-4 py-3 font-medium">Empresa</th>
-            <th class="text-left px-4 py-3 font-medium">Cidade</th>
-            <th class="text-left px-4 py-3 font-medium">Enviado em</th>
-          </tr></thead>
-          <tbody id="enviados-ac"></tbody>
-        </table>
-      </div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-cyan-400" id="ac-dias">--</div>
+      <div class="text-slate-400 text-xs mt-1">Dias restantes</div>
     </div>
   </div>
 
-  <!-- CartaMenu Section -->
-  <div id="section-cm" class="hidden">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-white" id="cm-total">--</div><div class="text-slate-400 text-xs mt-1">Total leads</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-blue-400" id="cm-validos">--</div><div class="text-slate-400 text-xs mt-1">Validos</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-green-400" id="cm-enviados">--</div><div class="text-slate-400 text-xs mt-1">Enviados</div></div>
-      <div class="card rounded-xl p-4 text-center"><div class="text-2xl font-bold text-purple-400" id="cm-disponiveis">--</div><div class="text-slate-400 text-xs mt-1">Disponiveis</div></div>
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-xl font-bold text-yellow-400" id="ac-hoje">--</div>
+      <div class="text-slate-400 text-xs mt-1">Enviados hoje</div>
     </div>
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
-      <div class="card rounded-xl p-5">
-        <h3 class="font-semibold text-white mb-4">Envios por dia</h3>
-        <div id="chart-cm" class="space-y-2"></div>
-      </div>
-      <div class="card rounded-xl p-5">
-        <h3 class="font-semibold text-white mb-4">Top cidades</h3>
-        <div id="cidades-cm" class="space-y-2"></div>
-      </div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-xl font-bold text-orange-400" id="ac-template">--</div>
+      <div class="text-slate-400 text-xs mt-1">Template atual</div>
     </div>
-    <div class="card rounded-xl p-5 mb-6">
-      <h3 class="font-semibold text-white mb-3">Log recente</h3>
-      <div id="log-cm" class="font-mono text-xs text-slate-400 space-y-0.5 max-h-48 overflow-y-auto"></div>
-    </div>
-    <div class="card rounded-xl overflow-hidden">
-      <div class="p-4 border-b border-slate-700"><h3 class="font-semibold text-white">Enviados recentes</h3></div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead><tr class="border-b border-slate-700 text-slate-400">
-            <th class="text-left px-4 py-3 font-medium">Empresa</th>
-            <th class="text-left px-4 py-3 font-medium">Cidade</th>
-            <th class="text-left px-4 py-3 font-medium">Enviado em</th>
-          </tr></thead>
-          <tbody id="enviados-cm"></tbody>
-        </table>
-      </div>
+    <div class="card rounded-xl p-4 text-center">
+      <div class="text-xl font-bold text-pink-400" id="ac-taxa">--</div>
+      <div class="text-slate-400 text-xs mt-1">Taxa envio</div>
     </div>
   </div>
+
+  <!-- Charts -->
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <div class="card rounded-xl p-5">
+      <h3 class="font-semibold text-white mb-4">Envios por dia</h3>
+      <div id="chart-ac" class="space-y-2"></div>
+    </div>
+    <div class="card rounded-xl p-5">
+      <h3 class="font-semibold text-white mb-4">Top cidades disponíveis</h3>
+      <div id="cidades-ac" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Próximos a enviar -->
+  <div class="card rounded-xl overflow-hidden mb-6">
+    <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+      <h3 class="font-semibold text-white">Próximos a enviar</h3>
+      <span class="tag bg-purple-900 text-purple-300">Top por rating</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-slate-700 text-slate-400 text-xs">
+          <th class="text-left px-4 py-3 font-medium">#</th>
+          <th class="text-left px-4 py-3 font-medium">Empresa</th>
+          <th class="text-left px-4 py-3 font-medium">Cidade</th>
+          <th class="text-left px-4 py-3 font-medium">Estado</th>
+          <th class="text-left px-4 py-3 font-medium">Rating</th>
+          <th class="text-left px-4 py-3 font-medium">Reviews</th>
+        </tr></thead>
+        <tbody id="proximos-ac"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Enviados recentes -->
+  <div class="card rounded-xl overflow-hidden mb-6">
+    <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+      <h3 class="font-semibold text-white">Enviados recentes</h3>
+      <span class="tag bg-green-900 text-green-300" id="enviados-count">--</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-slate-700 text-slate-400 text-xs">
+          <th class="text-left px-4 py-3 font-medium">Empresa</th>
+          <th class="text-left px-4 py-3 font-medium">Cidade</th>
+          <th class="text-left px-4 py-3 font-medium">Site enviado</th>
+          <th class="text-left px-4 py-3 font-medium">Data</th>
+        </tr></thead>
+        <tbody id="enviados-ac"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card rounded-xl p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-white">Log recente</h3>
+      <button onclick="carregarDados()" class="text-xs text-blue-400 hover:text-blue-300">↻ Atualizar</button>
+    </div>
+    <div id="log-ac" class="font-mono text-xs text-slate-400 space-y-0.5 max-h-64 overflow-y-auto"></div>
+  </div>
+
 </div>
-</div>
-
-<!-- Modal QR -->
-<div id="qr-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center" style="background:rgba(0,0,0,0.8)">
-  <div class="card rounded-2xl p-8 max-w-sm w-full mx-4 text-center">
-    <h2 id="qr-modal-title" class="text-xl font-bold text-white mb-2">Reconectar WhatsApp</h2>
-    <p id="qr-status-text" class="text-slate-400 text-sm mb-6">Iniciando reconexao...</p>
-    <div id="qr-container" class="flex justify-center mb-6">
-      <img id="qr-img" class="hidden rounded-lg" style="width:220px;height:220px" />
-      <div id="qr-loading" class="text-slate-500 text-sm py-8">Aguardando QR code...</div>
-    </div>
-    <p class="text-xs text-slate-500 mb-4">Escaneie com o WhatsApp: Aparelhos conectados > Conectar aparelho</p>
-    <div id="qr-debug" class="text-xs text-slate-600 mb-3 font-mono break-all"></div>
-    <button onclick="fecharQrModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Fechar</button>
-  </div>
 </div>
 
 <script>
-// SHA-256 hash of the access password (never store the plain text password here)
 var PASS_HASH = 'bbf53315ce68038137fbeb5d937c88d5da0901cf3222eeb3bad0d2da938bbf5c';
 var DATA_URL  = 'https://raw.githubusercontent.com/AdrielRattes-SERVIDORES-WEB/ac-sender-data/main/data.json';
-// VPS_API is read from data.json (tunnel URL changes on VPS restart)
-var _vpsApi = null;
 var _tk = null;
-function getToken() { return _tk; }
-function getApi()   { return _vpsApi; }
 
 async function sha256(str) {
   var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -191,7 +165,6 @@ async function verificarSenha() {
   var input = document.getElementById('login-input').value;
   var hash = await sha256(input);
   if (hash === PASS_HASH) {
-    // Derive API token from password hash (first 20 chars as token suffix)
     _tk = 'ac-' + hash.substring(0, 20);
     sessionStorage.setItem('ac_auth', hash);
     sessionStorage.setItem('ac_tk', _tk);
@@ -214,7 +187,6 @@ function sair() {
   document.getElementById('login-input').value = '';
 }
 
-// Check existing session
 (async function() {
   var saved = sessionStorage.getItem('ac_auth');
   if (saved && saved === PASS_HASH) {
@@ -227,23 +199,6 @@ function sair() {
   }
 })();
 
-var qrPollTimer = null;
-
-function setTab(t) {
-  document.getElementById('section-ac').classList.toggle('hidden', t !== 'ac');
-  document.getElementById('section-cm').classList.toggle('hidden', t !== 'cm');
-  ['ac','cm'].forEach(function(id) {
-    var btn = document.getElementById('tab-' + id);
-    if (id === t) {
-      btn.classList.add('text-white','border-blue-500');
-      btn.classList.remove('text-slate-400','border-transparent');
-    } else {
-      btn.classList.remove('text-white','border-blue-500');
-      btn.classList.add('text-slate-400','border-transparent');
-    }
-  });
-}
-
 function renderBar(containerId, dataObj, color) {
   var container = document.getElementById(containerId);
   var entries = Object.entries(dataObj || {}).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
@@ -251,168 +206,99 @@ function renderBar(containerId, dataObj, color) {
   container.innerHTML = entries.map(function(e) {
     var pct = Math.round(e[1]/maxVal*100);
     return '<div class="flex items-center gap-2 text-xs">' +
-      '<span class="text-slate-400 w-28 truncate">' + e[0] + '</span>' +
+      '<span class="text-slate-400 w-32 truncate">' + e[0] + '</span>' +
       '<div class="flex-1 h-2 bg-slate-700 rounded overflow-hidden">' +
       '<div class="h-2 rounded" style="width:' + pct + '%;background:' + color + '"></div>' +
       '</div><span class="text-white w-8 text-right">' + e[1] + '</span></div>';
   }).join('');
 }
 
-function renderSection(prefix, data) {
-  if (!data) return;
-  var s = data.stats || {};
-  document.getElementById(prefix+'-total').textContent      = (s.total||0).toLocaleString('pt-BR');
-  document.getElementById(prefix+'-validos').textContent    = (s.validos||0).toLocaleString('pt-BR');
-  document.getElementById(prefix+'-enviados').textContent   = (s.enviados||0).toLocaleString('pt-BR');
-  document.getElementById(prefix+'-disponiveis').textContent = (s.disponiveis||0).toLocaleString('pt-BR');
-  var hojeEl = document.getElementById(prefix+'-hoje');
-  if (hojeEl) hojeEl.textContent = s.hoje||0;
-  var diasEl = document.getElementById(prefix+'-dias');
-  if (diasEl) diasEl.textContent = s.dias_restantes||0;
-  var tmplEl = document.getElementById(prefix+'-template');
-  if (tmplEl) tmplEl.textContent = s.template_atual||'--';
-  renderBar('chart-'+prefix, data.envios_por_dia, '#3b82f6');
-  renderBar('cidades-'+prefix, data.leads_por_cidade, '#8b5cf6');
-  var logEl = document.getElementById('log-'+prefix);
-  logEl.innerHTML = (data.log||[]).slice(0,30).map(function(l){
-    return '<div class="leading-5">' + l.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
-  }).join('');
-  var tbody = document.getElementById('enviados-'+prefix);
-  tbody.innerHTML = (data.enviados||[]).slice(0,50).map(function(e){
-    var dt = (e.enviado_em||'').replace('T',' ').substring(0,16);
-    return '<tr class="border-b border-slate-800 hover:bg-slate-800/40">' +
-      '<td class="px-4 py-3 text-white text-sm">' + (e.nome||'--') + '</td>' +
-      '<td class="px-4 py-3 text-slate-400 text-sm">' + (e.cidade||'--') + '</td>' +
-      '<td class="px-4 py-3 text-slate-500 text-xs">' + dt + '</td></tr>';
-  }).join('');
-}
-
 function updateWaSlot(slot, statusObj) {
   var s = statusObj ? statusObj.status : 'unknown';
   var map = {
-    connected:    ['WA' + slot + ': conectado',      'bg-green-900 text-green-300'],
-    pending:      ['WA' + slot + ': QR pendente',    'bg-yellow-900 text-yellow-300'],
-    reconnecting: ['WA' + slot + ': reconectando',   'bg-blue-900 text-blue-300'],
-    expired:      ['WA' + slot + ': QR expirado',    'bg-red-900 text-red-300'],
-    unknown:      ['WA' + slot + ': desconhecido',   'bg-slate-700 text-slate-300'],
+    connected:    ['WA' + slot + ': ✅ conectado',   'bg-green-900 text-green-300'],
+    pending:      ['WA' + slot + ': ⏳ QR pendente', 'bg-yellow-900 text-yellow-300'],
+    reconnecting: ['WA' + slot + ': 🔄 reconectando','bg-blue-900 text-blue-300'],
+    expired:      ['WA' + slot + ': ❌ expirado',    'bg-red-900 text-red-300'],
+    unknown:      ['WA' + slot + ': desconhecido',    'bg-slate-700 text-slate-300'],
   };
   var info = map[s] || map.unknown;
   var badge = document.getElementById('wa-badge-' + slot);
-  var btn   = document.getElementById('btn-reconnect-' + slot);
   if (badge) { badge.textContent = info[0]; badge.className = 'px-3 py-1.5 rounded-full text-xs font-medium ' + info[1]; }
-  if (btn) { btn.classList.toggle('hidden', s === 'connected' || s === 'reconnecting'); }
-}
-
-function updateWaStatus(waStatus) {
-  if (!waStatus) return;
-  // New multi-slot format: {slot1: {...}, slot2: {...}}
-  if (waStatus.slot1 !== undefined || waStatus.slot2 !== undefined) {
-    updateWaSlot(1, waStatus.slot1);
-    updateWaSlot(2, waStatus.slot2);
-  } else {
-    // Legacy single-slot format: {status: '...'}
-    updateWaSlot(1, waStatus);
-    updateWaSlot(2, { status: 'unknown' });
-  }
 }
 
 async function carregarDados() {
   try {
     var r = await fetch(DATA_URL + '?t=' + Date.now());
     var d = await r.json();
-    renderSection('ac', d.ac);
-    renderSection('cm', d.cartamenu);
-    updateWaStatus(d.wa_status);
-    // Update tunnel URL from data (rotates on VPS restart)
-    if (d.tunnel && d.tunnel.url) {
-      _vpsApi = d.tunnel.url;
+    var ac = d.ac;
+    var s  = ac.stats || {};
+
+    // Stats
+    document.getElementById('ac-total').textContent       = (s.total||0).toLocaleString('pt-BR');
+    document.getElementById('ac-validos').textContent     = (s.validos||0).toLocaleString('pt-BR');
+    document.getElementById('ac-enviados').textContent    = (s.enviados||0).toLocaleString('pt-BR');
+    document.getElementById('ac-disponiveis').textContent = (s.disponiveis||0).toLocaleString('pt-BR');
+    document.getElementById('ac-dias').textContent        = s.dias_restantes||0;
+    document.getElementById('ac-hoje').textContent        = s.hoje||0;
+    document.getElementById('ac-template').textContent    = 'Nº ' + (s.template_atual||'--');
+    var taxa = s.enviados && s.validos ? Math.round(s.enviados/s.validos*100)+'%' : '--';
+    document.getElementById('ac-taxa').textContent        = taxa;
+    document.getElementById('enviados-count').textContent = (s.enviados||0) + ' enviados';
+
+    // Charts
+    renderBar('chart-ac',   ac.envios_por_dia,   '#3b82f6');
+    renderBar('cidades-ac', ac.leads_por_cidade, '#8b5cf6');
+
+    // Próximos a enviar
+    var tbody = document.getElementById('proximos-ac');
+    tbody.innerHTML = (ac.leads||[]).slice(0,20).map(function(l, i) {
+      var stars = l.rating ? '⭐ ' + l.rating.toFixed(1) : '--';
+      return '<tr class="border-b border-slate-800 hover:bg-slate-800/40">' +
+        '<td class="px-4 py-2 text-slate-500 text-xs">' + (i+1) + '</td>' +
+        '<td class="px-4 py-2 text-white text-sm font-medium">' + (l.nome||'--') + '</td>' +
+        '<td class="px-4 py-2 text-slate-400 text-sm">' + (l.cidade||'--') + '</td>' +
+        '<td class="px-4 py-2"><span class="tag bg-slate-700 text-slate-300">' + (l.estado||'--') + '</span></td>' +
+        '<td class="px-4 py-2 text-yellow-400 text-xs">' + stars + '</td>' +
+        '<td class="px-4 py-2 text-slate-500 text-xs">' + (l.reviews||0) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    // Enviados recentes
+    var tbody2 = document.getElementById('enviados-ac');
+    tbody2.innerHTML = (ac.enviados||[]).slice(0,50).map(function(e) {
+      var dt = (e.enviado_em||'').replace('T',' ').substring(0,16);
+      var siteLink = e.url
+        ? '<a href="' + e.url + '" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-xs truncate max-w-xs block">' + e.url.replace('https://','') + '</a>'
+        : '<span class="text-slate-600 text-xs">—</span>';
+      return '<tr class="border-b border-slate-800 hover:bg-slate-800/40">' +
+        '<td class="px-4 py-2 text-white text-sm">' + (e.nome||'--') + '</td>' +
+        '<td class="px-4 py-2 text-slate-400 text-sm">' + (e.cidade||'--') + '</td>' +
+        '<td class="px-4 py-2">' + siteLink + '</td>' +
+        '<td class="px-4 py-2 text-slate-500 text-xs whitespace-nowrap">' + dt + '</td>' +
+        '</tr>';
+    }).join('');
+
+    // Log
+    var logEl = document.getElementById('log-ac');
+    logEl.innerHTML = (ac.log||[]).slice(0,40).map(function(l) {
+      var color = l.includes('ERRO') || l.includes('FATAL') ? 'text-red-400' :
+                  l.includes('[OK]') || l.includes('Enviado') || l.includes('Concluido') ? 'text-green-400' :
+                  l.includes('===') ? 'text-blue-400 font-semibold' : 'text-slate-400';
+      return '<div class="leading-5 ' + color + '">' + l.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+    }).join('');
+
+    // WA Status
+    if (d.wa_status) {
+      updateWaSlot(1, d.wa_status.slot1 || d.wa_status);
     }
+
     var dt = new Date(d.atualizado_em);
-    document.getElementById('last-update').textContent = 'Atualizado: ' + dt.toLocaleString('pt-BR') + ' UTC';
+    document.getElementById('last-update').textContent = 'Atualizado: ' + dt.toLocaleString('pt-BR') + ' (UTC)';
   } catch(e) {
-    document.getElementById('last-update').textContent = 'Erro ao carregar dados';
+    document.getElementById('last-update').textContent = 'Erro ao carregar: ' + e.message;
   }
 }
-
-var _qrSlot = 1;
-
-async function iniciarReconexao(slot) {
-  _qrSlot = slot || 1;
-  if (!getApi()) {
-    alert('Tunnel offline. Aguarde a proxima atualizacao dos dados (ate 5 min).');
-    return;
-  }
-  document.getElementById('qr-modal-title').textContent = 'Reconectar WhatsApp #' + _qrSlot;
-  document.getElementById('qr-modal').classList.remove('hidden');
-  document.getElementById('qr-status-text').textContent = 'Iniciando reconexao...';
-  document.getElementById('qr-img').classList.add('hidden');
-  document.getElementById('qr-loading').classList.remove('hidden');
-  document.getElementById('qr-loading').textContent = 'Iniciando...';
-  try {
-    var r = await fetch(getApi() + '/reconnect', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slot: _qrSlot })
-    });
-    var d = await r.json();
-    if (!d.ok) throw new Error(d.error || 'Erro');
-    document.getElementById('qr-loading').textContent = 'Aguardando QR code... (pode levar ate 30s)';
-    iniciarPollQr(_qrSlot);
-  } catch(e) {
-    document.getElementById('qr-loading').textContent = 'Erro: ' + e.message;
-  }
-}
-
-function iniciarPollQr(slot) {
-  if (qrPollTimer) clearInterval(qrPollTimer);
-  var tentativas = 0;
-  qrPollTimer = setInterval(async function() {
-    tentativas++;
-    if (tentativas > 60) {
-      clearInterval(qrPollTimer);
-      document.getElementById('qr-status-text').textContent = 'Timeout. Tente novamente.';
-      return;
-    }
-    try {
-      var r = await fetch(getApi() + '/qr?slot=' + slot + '&t=' + Date.now(), {
-        headers: { 'Authorization': 'Bearer ' + getToken() }
-      });
-      if (r.status === 401) { clearInterval(qrPollTimer); return; }
-      var d = await r.json();
-      document.getElementById('qr-debug').textContent = '[' + tentativas + '] slot:' + slot + ' status:' + d.status + ' img:' + (!!d.img);
-      if (d.status === 'connected') {
-        clearInterval(qrPollTimer);
-        document.getElementById('qr-status-text').textContent = 'Conectado com sucesso!';
-        document.getElementById('qr-loading').classList.remove('hidden');
-        document.getElementById('qr-loading').textContent = 'WhatsApp #' + slot + ' conectado!';
-        document.getElementById('qr-img').classList.add('hidden');
-        updateWaSlot(slot, { status: 'connected' });
-        return;
-      }
-      if (d.img && d.status === 'pending') {
-        document.getElementById('qr-status-text').textContent = 'Escaneie com o WhatsApp';
-        document.getElementById('qr-loading').classList.add('hidden');
-        var img = document.getElementById('qr-img');
-        img.src = d.img;
-        img.classList.remove('hidden');
-      } else if (d.status === 'expired') {
-        document.getElementById('qr-status-text').textContent = 'QR expirado. Clique em Reconectar novamente.';
-        clearInterval(qrPollTimer);
-      }
-    } catch(e) {
-      document.getElementById('qr-debug').textContent = '[' + tentativas + '] ERRO: ' + e.message;
-    }
-  }, 2000);
-}
-
-function fecharQrModal() {
-  if (qrPollTimer) clearInterval(qrPollTimer);
-  document.getElementById('qr-modal').classList.add('hidden');
-}
-
-document.getElementById('qr-modal').addEventListener('click', function(e) {
-  if (e.target === this) fecharQrModal();
-});
 
 setInterval(function() { if (_tk) carregarDados(); }, 120000);
 </script>
